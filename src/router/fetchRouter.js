@@ -18,7 +18,7 @@ fetchRouter
         res.status(201).send(`Successfully added ${record.points} points.`);
   });
 
-  
+
 fetchRouter
     .route("/spend")
     .post((req, res) => {
@@ -29,42 +29,43 @@ fetchRouter
             try {
               response = spendPoints(points);
               res.status(200).send(response);
-            } catch (e) {
-                res.status(400).send("Could not spend points");
+            } 
+            catch (e) {
+              res.status(400).send("Could not spend points");
             }
           }
       });
     
     const spendPoints = (pointsToSpend) => {
-      let currPoints = pointsToSpend;
-      let spendies = [];
+      let spendRequest = pointsToSpend;
+      let spendRecord = [];
       const l = STORE.length;
       for (let index = 0; index < l; index++) {
-        console.log(currPoints);
-        if (currPoints == 0) {
+        console.log(spendRequest);
+        if (spendRequest == 0) {
           break;
         }
         const record = STORE.shift();
         let payer = record["payer"];
         let points = record["points"];
-        if (points <= currPoints) {
-          currPoints -= points;
-          spendies.push({ payer: payer, points: -points });
+        if (points <= spendRequest) {
+          spendRequest -= points;
+          spendRecord.push({ payer: payer, points: -points });
         } else {
-          spendies.push({ payer: payer, points: -currPoints });
+          spendRecord.push({ payer: payer, points: -spendRequest });
           const date = new Date(Date.now());
           const timeStamp = date.toISOString();
           STORE.push({
             payer: payer,
-            points: points - currPoints,
+            points: points - spendRequest,
             timeStamp: timeStamp,
           });
           console.log(STORE);
-          currPoints = 0;
+          spendRequest = 0;
         }
       }
-      console.log(spendies);
-      return [...spendies];
+      console.log(spendRecord);
+      return [...spendRecord];
     };
 
 fetchRouter
@@ -73,8 +74,8 @@ fetchRouter
         let points = new Map();
         STORE.forEach((record) => {
           if (points.has(record["payer"])) {
-            const currPoints = points.get(record["payer"]);
-            points.set(record["payer"], currPoints + record["points"]);
+            const spendRequest = points.get(record["payer"]);
+            points.set(record["payer"], spendRequest + record["points"]);
           } else {
             points.set(record["payer"], record["points"]);
           }
